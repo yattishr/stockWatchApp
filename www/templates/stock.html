@@ -1,0 +1,122 @@
+<ion-view view-title="Name: {{ticker}}">
+
+  <ion-nav-bar id="stock-navbar" class="bar-dark ng-style:reactiveColor">
+    <ion-nav-back-button></ion-nav-back-button>
+  </ion-nav-bar>
+
+  <ion-nav-buttons side="right">
+    <button class="button icon-left ng-style:reactiveColor" ng-class="following ? 'ion-ios-checkmark-empty' : 'ion-ios-plus'" ng-bind="following ? 'Following' : 'Follow'" ng-click="toggleFollow()"></button>
+  </ion-nav-buttons>
+
+  <div class="bar bar-subheader bar-light" id="stock-subheader-bar">
+
+    <div class="buttons" side="left">
+      <div class="button button-clear display-flex">
+        <h6 id="stock-name">{{stockDetailsData.Name}}</h6>
+      </div>
+    </div>
+
+    <h2 class="title button-left button-right" id="stock-price">{{stockDetailsData.Ask | shrinkNumber:3}}</h2>
+
+    <div class="buttons" side="right">
+      <div class="button button-clear">
+        <h6 id="stock-change" ng-class="stockDetailsData.ChangeinPercent < 0 ? 'assertive' : 'balanced'"><span ng-if="stockDetailsData.ChangeinPercent > 0">+</span>{{stockDetailsData.ChangeinPercent | shrinkNumber:2}}<br>(<span ng-if="stockDetailsData.ChangeinPercent > 0">+</span>{{stockDetailsData.ChangeinPercent | number:3}}%)</h6>
+      </div>
+    </div>
+  </div>
+
+  <ion-content class="has-subheader">
+
+  <!-- Toggle chart view -->
+  <div class="button-bar" id="short-button-bar">
+    <a ng-click=chartViewFunc(1) ng-class="chartView == 1 ? 'active' : ''" class="button">Day</a>
+    <a ng-click=chartViewFunc(2) ng-class="chartView == 2 ? 'active' : ''" class="button">Week</a>
+    <a ng-click=chartViewFunc(3) ng-class="chartView == 3 ? 'active' : ''" class="button">3mon</a>
+    <a ng-click=chartViewFunc(4) ng-class="chartView == 4 ? 'active' : ''" class="button">Year</a>
+    <a ng-click=chartViewFunc(5) ng-class="chartView == 5 ? 'active' : ''" class="button">Max</a>
+  </div>
+  <!-- End Toggle chart view -->
+
+  <!-- Display Static YAHOO Chart -->
+  <img ng-if="chartView == 1" ng-src="https://chart.finance.yahoo.com/z?s={{ticker}}&t=1d&q=l&l=on&z=s&p=m50,m200" style="width: 100">
+  <img ng-if="chartView == 2" ng-src="https://chart.finance.yahoo.com/z?s={{ticker}}&t=5d&q=l&l=on&z=s&p=m50,m200" style="width: 100">
+  <img ng-if="chartView == 3" ng-src="https://chart.finance.yahoo.com/z?s={{ticker}}&t=3m&q=l&l=on&z=s&p=m50,m200" style="width: 100">
+  <img ng-if="chartView == 4" ng-src="https://chart.finance.yahoo.com/z?s={{ticker}}&t=1y&q=l&l=on&z=s&p=m50,m200" style="width: 100">
+  <img ng-if="chartView == 5" ng-src="https://chart.finance.yahoo.com/z?s={{ticker}}&t=my&q=l&l=on&z=s&p=m50,m200" style="width: 100">
+  <!-- End Display Static YAHOO Chart -->
+
+  <!-- Display Stock Price Data -->
+    <div class="card" id="market-data-card">
+      <div class="item item-divider">Market Data <span class="last-trade">Last trade: {{stockDetailsData.LastTradeTime | date:'h:mn a'}}</span></div>
+      <div class="row row-center">
+        <div class="col">Ask:</div>
+        <div class="col col-20">{{stockDetailsData.Ask | shrinkNumber:2}}</div>
+        <div class="col">Bid:</div>
+        <div class="col col-20">{{stockDetailsData.Bid | shrinkNumber:2}}</div>
+      </div>
+      <div class="row row-center">
+        <div class="col">Avg Daily Vol:</div>
+        <div class="col col-20">{{stockDetailsData.AverageDailyVolume}}</div>
+      </div>
+
+      <div class="row row-center">
+        <div class="col">Volume:</div>
+        <div class="col col-20">{{stockDetailsData.Volume}}</div>
+      </div>
+
+      <div class="row row-center">
+        <div class="col">Open:</div>
+        <div class="col col-20">{{stockDetailsData.Open | shrinkNumber:2}}</div>
+      </div>
+
+      <div class="row row-center">
+        <div class="col">Previous Close:</div>
+        <div class="col col-20">{{stockDetailsData.PreviousClose | shrinkNumber:2}}</div>
+      </div>
+
+      <div class="row row-center">
+        <div class="col">Change in Percent:</div>
+        <div class="col col-20">{{stockDetailsData.ChangeinPercent}}</div>
+      </div>
+
+    </div>
+  <!--End Display Stock Price Data -->
+
+
+    <div class="card" id="stock-notes">
+      <div class="item item-divider">Notes <span ng-click="addNote()" class="add-stock-notes">Add <i class="icon ion-ios-plus"></i> </span></div>
+      <a class="item" ng-repeat="note in stockNotes track by $index" ng-click="openNote($index, note.title, note.body)">
+        <h2>{{note.title}}</h2>
+        <h6>{{note.date | date: 'M/d/yy'}}</h6>
+      </a>
+    </div>
+
+    <div class="card" id="stock-news">
+      <div class="item item-divider">News</div>
+      <a class="item item-icon-right" ng-repeat="story in newsStories" ng-click="openWindow(story.link)">
+        <h2>This story title: {{story.title}}</h2>
+        <h6>This story date: {{story.pubDate | characters:17:false:false}}</h6>
+        <p ng-if="story.description.length > 0">{{story.description | characters:200:false:true}}</p>
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+      <a class="item item-icon-right" ng-click="openWindow(story.link)">
+        <h2>Story Title 1</h2>
+        <h6>2017/04/12</h6>
+        <p>Main Story</p>
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+      <a class="item item-icon-right" ng-click="openWindow(story.link)">
+        <h2>Story Title 2</h2>
+        <h6>2017/04/11</h6>
+        <p>Main Story</p>
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+      <a class="item item-icon-right" ng-click="openWindow(story.link)">
+        <h2>Story Title 1</h2>
+        <h6>2017/04/10</h6>
+        <p>Main Story</p>
+        <i class="icon ion-ios-arrow-right"></i>
+      </a>
+    </div>
+  </ion-content>
+</ion-view>
