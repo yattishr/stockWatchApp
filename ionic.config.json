@@ -9,5 +9,13 @@
     "www/**/*",
     "!www/lib/**/*",
     "!www/**/*.map"
+  ],
+  "name": "proxy-example",
+  "app_id": "",
+  "proxies": [
+    {
+      "path": "/headline",
+      "proxyUrl": "http://finance.yahoo.com/rss/headline"
+    }
   ]
 }
